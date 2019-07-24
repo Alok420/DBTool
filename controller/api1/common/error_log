@@ -1,0 +1,3 @@
+[08-Jun-2019 09:41:47 Etc/GMT] PHP Notice:  Undefined index: tbname in /home/justpkpj/public_html/hssolutions.co.in/controller/api1/common/insert2.php on line 11
+[08-Jun-2019 09:41:47 Etc/GMT] PHP Notice:  Undefined offset: 0 in /home/justpkpj/public_html/hssolutions.co.in/controller/api1/common/insert2.php on line 23
+[08-Jun-2019 09:41:47 Etc/GMT] PHP Notice:  Undefined offset: 0 in /home/justpkpj/public_html/hssolutions.co.in/controller/api1/common/insert2.php on line 39
