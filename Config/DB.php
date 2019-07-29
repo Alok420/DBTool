@@ -1,7 +1,7 @@
 <?php
 
 interface DBDeclare {
-  
+
     public function sendTo($path, $param = "");
 
     public function login($username, $password, $type);

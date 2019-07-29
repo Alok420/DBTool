@@ -1,7 +1,11 @@
 <?php
+
 session_start();
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
+$connection = new connection();
+$conn = $connection->connect("localhost", "root", "");
+$connection->attach_db($conn, "barcode");
 $db = new DB($conn);
 $location = "../../../../iraw/mg/post";
 
@@ -18,7 +22,7 @@ if (isset($_POST["id"])) {
 }
 unset($_POST["tbname"]);
 unset($_POST["id"]);
-$info = $db->update($_POST, $tbname,$recentinsertedid);
+$info = $db->update($_POST, $tbname, $recentinsertedid);
 if ($info[0] == 1) {
     if (count($_FILES) > 0) {
         $return = $db->fileUploadWithTable($_FILES, $tbname, $recentinsertedid, $location, "50m", "jpg,png");

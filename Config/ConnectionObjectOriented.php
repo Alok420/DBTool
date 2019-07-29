@@ -4,13 +4,13 @@ interface connection_declare {
 
     public function create_database($dbname, $operation, $conn);
 
-    public function connect($db, $username = "root", $pass = "");
+    public function connect($host, $username = "root", $pass = "");
 }
 
 class connection implements connection_declare {
 
     public function build($db, $username = "root", $pass = "", $operation = "") {
-        $conn = $this->connect($db, $username, $pass);
+        $conn = $this->connect("localhost", $username, $pass);
         $info = $this->create_database($db, $operation, $conn);
         if ($info == "created" || $info == "exist") {
             $this->attach_db($conn, $db);
@@ -21,8 +21,8 @@ class connection implements connection_declare {
         return $conn;
     }
 
-    public function connect($db, $username = "root", $pass = "") {
-        $conn = new mysqli('localhost', $username, $pass);
+    public function connect($host = "localhost", $username = "root", $pass = "") {
+        $conn = new mysqli($host, $username, $pass);
         if ($conn->connect_error) {
             die("not connected") . $connect_error;
         }

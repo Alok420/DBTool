@@ -1,11 +1,15 @@
 <?php
+
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
+$connection = new connection();
+$conn = $connection->connect("localhost", "root", "");
+$connection->attach_db($conn, "barcode");
 $db = new DB($conn);
 if (isset($_GET["id"]) && isset($_GET["table_name"])) {
     $id = $_GET["id"];
     $table = $_GET["table_name"];
-    $column="*";
+    $column = "*";
     if ($_GET["column"]) {
         $column = $_GET["column"];
     } else {
