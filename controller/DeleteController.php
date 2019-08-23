@@ -2,9 +2,6 @@
 
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
-$connection = new connection();
-$conn = $connection->connect("localhost", "root", "");
-$connection->attach_db($conn, "barcode");
 $db = new DB($conn);
 $returnpath = $_SERVER["HTTP_REFERER"] . "?info=Data deleted";
 if (isset($_REQUEST["id"]) && isset($_REQUEST["table_name"])) {

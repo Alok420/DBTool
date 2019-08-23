@@ -3,9 +3,6 @@
 session_start();
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
-$connection = new connection();
-$conn = $connection->connect("localhost", "root", "");
-$connection->attach_db($conn, "barcode");
 $db = new DB($conn);
 $location = "../img";
 
@@ -15,14 +12,14 @@ $tbname = $_POST["tbname"];
 
 if ($tbname == "user") {
     $location = "../img/user/";
-} else if ($tbname == "product") {
-    $location = "../img/product/";
-} else if ($tbname == "product_category") {
-    $location = "../img/product_category/";
 } else if ($tbname == "services") {
     $location = "../img/services/";
 } else if ($tbname == "service_category") {
     $location = "../img/service_category/";
+} else if ($tbname == "product") {
+    $location = "../img/product/";
+} else if ($tbname == "product_category") {
+    $location = "../img/product_category/";
 } else if ($tbname == "portfolio") {
     $location = "../img/portfolio/";
 } else if ($tbname == "portfolio_category") {
@@ -45,21 +42,21 @@ if ($info[0] == 1) {
         $return["message"] = "Data and image saved";
         $return["recentinsertedid"] = $_SESSION["recentinsertedid"];
 //        var_dump($return);
-        $db->sendBack($_SERVER, $_REQUEST["info"]);
+        $db->sendBack($_SERVER, "?" . http_build_query($return));
     } else {
         $info = array();
         $info["status"] = "success";
         $info["message"] = "Data  saved";
         $info["recentinsertedid"] = $_SESSION["recentinsertedid"] or 0;
 //        var_dump($info);
-        $db->sendBack($_SERVER, $_REQUEST["info"]);
+        $db->sendBack($_SERVER, "?" . http_build_query($info));
     }
 } else if ($info[0] == 0) {
 
     $info["status"] = "failed";
     $info["message"] = "Data not saved";
 //    var_dump($info);
-    $db->sendBack($_SERVER, "?info=Data not saved");
+    $db->sendBack($_SERVER, "?" . http_build_query($info));
 }
     
 //     }

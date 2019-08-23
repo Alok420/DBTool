@@ -1,13 +1,16 @@
 <?php
-
 session_start();
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
-$connection = new connection();
-$conn = $connection->connect("localhost", "root", "");
-$connection->attach_db($conn, "barcode");
+$co = new connection();
+$host = isset($_POST["host"])?$_POST["host"]:"localhost";
+$dbusername = isset($_POST["dbusername"])?$_POST["dbusername"]:"root";;
+$pass = isset($_POST["dbpassword"])?$_POST["dbpassword"]:"";
+$dbname = isset($_POST["dbname"])?$_POST["dbname"]:"bitsinfotec";;
+$conn = $co->connect($host, $dbusername, $pass);
+$co->attach_db($conn, $dbname);
 $db = new DB($conn);
-$info = $db->login($_POST["userid"], $_POST["password"], "user");
+$info = $db->login($_POST["userid"], $_POST["password"], $_POST["tbname"]);
 //var_dump($info);
 if ($info["status_number"] == 1) {
     if ($info["role"] == "admin") {
@@ -16,5 +19,5 @@ if ($info["status_number"] == 1) {
         $db->sendTo("../user/index.php");
     }
 } else {
-    $db->sendBack($_SERVER, "?info=" . $info["status_message"]);
+    $db->sendBack($_SERVER, "?" . http_build_query($info));
 }

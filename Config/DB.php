@@ -38,6 +38,8 @@ interface DBDeclare {
 
     public function userId($name);
 
+    public function userIdWithRange($name, $startrange, $endrange);
+
     public function sendBack($server);
 
     public function exist($tbname, $columnvalue);
@@ -78,6 +80,12 @@ class DB implements DBDeclare {
 
     public function userId($name) {
         $rand = rand(0, 1000);
+        $userid = str_replace(" ", "_", $name) . $rand;
+        return $userid;
+    }
+
+    public function userIdWithRange($name, $startrange, $endrange) {
+        $rand = rand($startrange, $endrange);
         $userid = str_replace(" ", "_", $name) . $rand;
         return $userid;
     }
@@ -358,8 +366,8 @@ class DB implements DBDeclare {
                 echo '<td>' . $val . '</td>';
             }
 
-//            echo "<td><button class='btn btn-success' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord(" . $row["id"] . ",\"" . $table . "\")'  id='updatebtn'>Update</button></td>";
-//            echo "<td><button class='btn btn-success' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord(" . $row["id"] . ",\"" . $table . "\")' id='deletebtn'>Delete</button></td>";
+//            echo "<td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord(" . $row["id"] . ",\"" . $table . "\")'  id='updatebtn'>Update</button></td>";
+//            echo "<td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord(" . $row["id"] . ",\"" . $table . "\")' id='deletebtn'>Delete</button></td>";
             echo '</tr>';
         }
         echo '</tbody></table></div></div>';
@@ -400,10 +408,10 @@ class DB implements DBDeclare {
                         array2 = Object.values(obj);
                          $('#updatemodel .modal-body').text(\"\");
                         for (var i = 0; i < Object.keys(obj).length; i++) {
-                            $('#updatemodel .modal-body').append('<br><label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
+                            $('#updatemodel .modal-body').append('<label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
 
                         }
-                        $('#updatemodel .modal-body').append('<br><button class=\"btn btn-default btnsub\" onclick=\"getData()\">Update</button>');
+                        $('#updatemodel .modal-body').append('<button class=\"btn btn-default btnsub\" onclick=\"getData()\">Update</button>');
                     }
                 };
                 xhttp.open(\"GET\", \"../controller/UpdateFormSelection.php?id=\" + id + \"&table_name=\"+table+\"&column=\"+column\", true);
@@ -496,11 +504,257 @@ class DB implements DBDeclare {
             });
         </script>
         ';
-        echo '<br><div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">  ';
+        echo '<div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">';
         for ($i = 0; $i < count($searchDropDown); $i++) {
             echo $searchDropDown[$i];
         }
-        echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Srarch" class="btn btn-success"><input type="hidden" name="tbname" value="' . $table . '"></form></div><br>';
+        echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Srarch" class="btn btn-success"><input type="hidden" name="tbname" value="' . $table . '"></form></div>';
+        echo '<table id="myTable" class="table table-sm">'
+        . '<thead><tr class="" style="background-color:#4272d7; color:white;">';
+        if ($toollist == "update") {
+            ?>
+            <th></th>
+            <?php
+        } else if ($toollist == "delete") {
+            ?>
+            <th></th>
+            <?php
+        } else if ("all") {
+            ?>
+            <th></th>
+            <th></th>
+            <?php
+        } else {
+            ?>
+
+            <?php
+        }
+        for ($i = 0; $i < count($columns); $i++) {
+            if ($sort == "id asc") {
+                $sort = "id desc";
+            } else if ($sort == "id desc") {
+                $sort = "id asc";
+            }
+            if ($columns[$i] == "id") {
+                echo "<th></i><a href='?sort=$sort' style='text-decoration:none;color:white;text-decoration:underline;'><i class='fa fa-fw fa-sort'>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</a></th>";
+            } else {
+                echo "<th>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</th>";
+            }
+        }
+        echo ' </tr></thead><tbody>';
+        $j = 0;
+        $list = $this->select($table, $column, $where, $sort);
+        while ($row = $list->fetch_assoc()) {
+            $j++;
+            echo '<tr>';
+
+            if ($toollist == "update") {
+                ?>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
+                <?php
+            } else if ($toollist == "delete") {
+                ?>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
+                <?php
+            } else if ("all") {
+                ?>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
+
+                <?php
+            } else {
+                ?>
+
+                <?php
+            }
+            foreach ($row as $key => $val) {
+                if (strpos($key, "_date") > 0) {
+                    $phpdate = strtotime($val);
+                    $val = date('d-m-Y', $phpdate);
+                }
+                if (strpos($key, "_id") > 0) {
+                    $startpos = 0;
+                    $endpos = strpos($key, "_id");
+                    $tbname = substr($key, $startpos, ($endpos) - $startpos);
+                    echo '<td><a style="text-decoration:underline;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . '</a></td>';
+                } elseif (array_key_exists($key, $columntype)) {
+                    $filepath = $columntype[$key];
+                    $ext = pathinfo($val, PATHINFO_EXTENSION);
+                    if ($ext == "jpg" || $ext == "png" || $ext == "gif") {
+                        echo '<td><a href="' . $filepath . $val . '">' . $val . '<iframe height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '"></iframe>' . $val . '</a></td>';
+                    } else {
+                        echo '<td><a href="' . $filepath . $val . '">' . $val . '</a></td>';
+                    }
+                } else {
+                    echo '<td>' . $val . '</td>';
+                }
+            }
+            if ($externallinks == "addTaskPermissions") {
+                $link = "<td><a href=addTaskPermissions.php?id=" . $row["id"] . ">Add task and permissions</a></td>";
+//                $startpos = strpos($externallinks, "{");
+//                $endpos = strpos($externallinks, "}");
+//                $key = substr($externallinks, $startpos + 1, ($endpos - 1) - $startpos);
+//                $key2 = '{' . $key . '}';
+//                $key = $key . "=" . $row[$key];
+//                $externallinks = str_replace($key2, $key, $externallinks);
+                echo $link;
+            } else if ($externallinks == "addRole") {
+                $link = "<td><a href=addRole.php?id=" . $row["id"] . ">Add role</a></td>";
+                echo $link;
+            } else if ($externallinks == "print_receipt") {
+                $link = "<td><a href=receipt.php?id=" . $row["id"] . ">Print Receipt</a></td>";
+                echo $link;
+            } else if ($externallinks == "Receipt for tip") {
+                $link = "<td><a href=receipt_trip.php?id=" . $row["id"] . ">Print Receipt</a></td>";
+                echo $link;
+            } else if ($externallinks == "Receipt for challan") {
+                $link = "<td><a href=receipt_challan.php?id=" . $row["id"] . ">Print Receipt</a></td>";
+                echo $link;
+            }
+            ?>
+            </tr>
+            <?php
+        }
+        echo '</tbody></table></div></div>';
+        echo '<script>
+            function deleteRecord(id, table) {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById("deleteinfo").innerHTML = "loading...";
+                        location.reload();
+                    } else if (this.readyState < 4) {
+                        document.getElementById("deleteinfo").innerHTML = "loading...";
+                    }
+                };
+                xhttp.open("GET", "../controller/DeleteController.php?id=" + id + "&table_name=" + table, true);
+                xhttp.send();
+            }
+            
+
+
+
+        </script>';
+        echo " <script>
+            function updateRecord(id,column,table) {
+                var a = $('#updateinfo').text();
+                $('.modal-body').css(\"background-color\", \"whitesmoke\");
+                selectRecordById(id,column,table);
+            }
+            function selectRecordById(id,column,table) {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var obj = JSON.parse(xhttp.responseText);
+                        var array = new Array();
+                        var array2 = new Array();
+
+                        array = Object.keys(obj);
+                        array2 = Object.values(obj);
+                         $('#updatemodel .modal-body').text(\"\");
+                        for (var i = 0; i < Object.keys(obj).length; i++) {
+                            $('#updatemodel .modal-body').append(<label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
+
+                        }
+                        $('#updatemodel .modal-body').append('<input type=\"hidden\" name=\"tbname\" value=\"'+table+'\">');
+                        $('#updatemodel .modal-body').append('<button class=\"btn btn-success btn-sm btnsub\" onclick=\"getData()\">Update</button>');
+                    }
+                };
+                xhttp.open(\"GET\", \"../controller/UpdateFormSelection.php?id=\" + id + \"&table_name=\"+table+\"&column=\"+column, true);
+                xhttp.send();
+            }
+            function getData() {
+                var data = \"\", keys = \"\";
+                for (var i = 0; i < $('#updatemodel .modal-body input').length; i++) {
+                    var single = $('#updatemodel .modal-body input:eq(' + i + ')').val();
+                    var key = $('#updatemodel .modal-body input:eq(' + i + ')').attr(\"name\");
+                    if (i == $('#updatemodel .modal-body input').length - 1) {
+                        data += key + \"=\" + single;
+
+                    } else {
+                        data += key + \"=\" + single + \"&\";
+                    }
+                }
+                $.get(\"../controller/UpdateData.php?\"+ data, function (rdata, status) {
+                    alert('updated :---'+rdata);
+                    location.reload();
+                });
+            }
+        </script>";
+        echo '<div class="modal fade" id="updatemodel" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Update data</h4>
+                    </div>
+                    <div class="modal-body">
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>';
+
+        echo '<div class="modal fade" id="deletemodel" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p id="deleteinfo">Some text in the modal.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>';
+    }
+//-------------------------this function is not tested yet-------------
+    function showInTableByQuery($query="",$toollist = "all", $externallinks = '', $columntype = array("key" => "value"), $sort = "id asc") {
+
+        $this->returnarray = array();
+        $columns = array();
+        $list = $this->select($query, $column, $where, $sort);
+        $searchDropDown = array();
+
+        while ($row = $list->fetch_assoc()) {
+            $tempcol = array();
+            $searchDropDowns = array();
+            foreach ($row as $key => $val) {
+                array_push($tempcol, "$key");
+                array_push($searchDropDowns, "<option value='$key'>$key</option>");
+            }
+            if (count($tempcol) >= count($columns)) {
+                $columns = $tempcol;
+                $searchDropDown = $searchDropDowns;
+            }
+        }
+        ?>
+
+        <?php
+        echo '        
+            <script>
+            $(document).ready(function () {
+                $("#myInput").on("keyup", function () {
+                    var value = $(this).val().toLowerCase();
+                    $("#myTable tr").filter(function () {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    });
+                });
+            });
+        </script>
+        ';
+        echo '<div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">  ';
+        for ($i = 0; $i < count($searchDropDown); $i++) {
+            echo $searchDropDown[$i];
+        }
+        echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Srarch" class="btn btn-outline-success btn-sm"><input type="hidden" name="tbname" value="' . $table . '"></form></div><br>';
         echo '<table id="myTable" class="table  ">'
         . '<thead><tr class="" style="background-color:#4272d7; color:white;">';
         if ($toollist == "update") {
@@ -542,16 +796,16 @@ class DB implements DBDeclare {
 
             if ($toollist == "update") {
                 ?>
-                <td><button class='btn btn-success' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
                 <?php
             } else if ($toollist == "delete") {
                 ?>
-                <td><button class='btn btn-success' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
                 <?php
             } else if ("all") {
                 ?>
-                <td><button class='btn btn-success' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
-                <td><button class='btn btn-success' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
 
                 <?php
             } else {
@@ -750,6 +1004,16 @@ class DB implements DBDeclare {
 //        echo "$SQL";
         if (!empty($columns)) {
             $data = $this->conn->query($SQL);
+            return $data;
+        } else {
+            return $this->conn->error;
+        }
+    }
+
+    function query($query = "") {
+        $this->returnarray = array();
+        if (!empty($query)) {
+            $data = $this->conn->query($query);
             return $data;
         } else {
             return $this->conn->error;
@@ -1060,6 +1324,16 @@ class DB implements DBDeclare {
         while ($one = $data->fetch_assoc()) {
             ?>
             <option value="<?php echo $one["id"]; ?>"><?php echo $one[$columnname]; ?></option>
+            <?php
+        }
+    }
+
+    public function select_option_withcolasval($tbname, $columnname) {
+        $data = $this->select($tbname);
+
+        while ($one = $data->fetch_assoc()) {
+            ?>
+            <option value="<?php echo $one[$columnname]; ?>"><?php echo $one[$columnname]; ?></option>
             <?php
         }
     }

@@ -1,5 +1,4 @@
 <?php
-
 interface connection_declare {
 
     public function create_database($dbname, $operation, $conn);
@@ -63,3 +62,13 @@ class connection implements connection_declare {
     }
 
 }
+if (isset($_SESSION["conn"])) {
+    $conn = $_SESSION["conn"];
+} else {
+    
+    $connection = new connection();
+    $conn = $connection->connect("localhost", "root", "");
+    $connection->attach_db($conn, "bitsinfotec");
+}
+
+?>
