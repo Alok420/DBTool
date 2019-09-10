@@ -5,9 +5,6 @@ include '../../../../Config/ConnectionObjectOriented.php';
 include '../../../../Config/DB.php';
 $db = new DB($conn);
 $location = "../../../../iraw/mg/post";
-
-// if (isset($_POST["api_key"])) {
-
 $tbname = $_POST["tbname"];
 if ($tbname == "lorry_receipt") {
     $location = "../../../../raw/lorry_images";
@@ -19,10 +16,9 @@ if (isset($_POST["id"])) {
 }
 unset($_POST["tbname"]);
 unset($_POST["id"]);
-$info = $db->update($_POST, $tbname,$recentinsertedid);
+$info = $db->update($_POST, $tbname, $recentinsertedid);
 if ($info[0] == 1) {
     if (count($_FILES) > 0) {
-
         $return = $db->fileUploadWithTable($_FILES, $tbname, $recentinsertedid, $location, "50m", "jpg,png");
         $return = array();
         $return["status"] = "success";
@@ -33,7 +29,7 @@ if ($info[0] == 1) {
         $info = array();
         $info["status"] = "success";
         $info["message"] = "Data  saved";
-        $info["recentinsertedid"] = $_SESSION["recentinsertedid"] or 0;
+        $info["recentinsertedid"] = $recentinsertedid or 0;
         echo json_encode($info);
     }
 } else if ($info[0] == 0) {

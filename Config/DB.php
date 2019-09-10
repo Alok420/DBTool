@@ -1,4 +1,10 @@
 <?php
+$sort = "";
+if (isset($_GET["sort"])) {
+    $sort = $_GET["sort"];
+} else {
+    $sort = "id desc";
+}
 
 interface DBDeclare {
 
@@ -408,8 +414,7 @@ class DB implements DBDeclare {
                         array2 = Object.values(obj);
                          $('#updatemodel .modal-body').text(\"\");
                         for (var i = 0; i < Object.keys(obj).length; i++) {
-                            $('#updatemodel .modal-body').append('<label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
-
+                            $('#updatemodel .modal-body').append('<label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" id=\"' + array[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
                         }
                         $('#updatemodel .modal-body').append('<button class=\"btn btn-default btnsub\" onclick=\"getData()\">Update</button>');
                     }
@@ -460,7 +465,7 @@ class DB implements DBDeclare {
                         <h4 class="modal-title">Modal Header</h4>
                     </div>
                     <div class="modal-body">
-                        <p id="deleteinfo">Some text in the modal.</p>
+                        <p id="deleteinfo">Deleting.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -471,7 +476,6 @@ class DB implements DBDeclare {
     }
 
     function showInTable($table, $column = "*", $where = "", $toollist = "all", $externallinks = '', $columntype = array("key" => "value"), $sort = "id asc") {
-
         $this->returnarray = array();
         $columns = array();
         $list = $this->select($table, $column, $where, $sort);
@@ -508,9 +512,10 @@ class DB implements DBDeclare {
         for ($i = 0; $i < count($searchDropDown); $i++) {
             echo $searchDropDown[$i];
         }
-        echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Srarch" class="btn btn-success"><input type="hidden" name="tbname" value="' . $table . '"></form></div>';
+        echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Search'
+        . '." class="btn btn-success btn-sm"><input type="hidden" name="tbname" value="' . $table . '"></form>&nbsp;<button type="button" class="btn btn-success printExcel btn-sm"> Print Excel</button></div>';
         echo '<table id="myTable" class="table table-sm">'
-        . '<thead><tr class="" style="background-color:#4272d7; color:white;">';
+        . '<thead><tr class="sticky-top" style="background-color:#4272d7;  color:white;">';
         if ($toollist == "update") {
             ?>
             <th></th>
@@ -536,30 +541,31 @@ class DB implements DBDeclare {
                 $sort = "id asc";
             }
             if ($columns[$i] == "id") {
-                echo "<th></i><a href='?sort=$sort' style='text-decoration:none;color:white;text-decoration:underline;'><i class='fa fa-fw fa-sort'>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</a></th>";
+                echo "<th></i><a href='?sort=$sort' style='text-decoration:none;color:white;'>&blacktriangledown;" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</a></th>";
             } else {
-                echo "<th>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</th>";
+                echo "<th style='word-wrap: break-word;paddng:0px;pargin:0px;'>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</th>";
             }
         }
         echo ' </tr></thead><tbody>';
         $j = 0;
         $list = $this->select($table, $column, $where, $sort);
         while ($row = $list->fetch_assoc()) {
+            
             $j++;
             echo '<tr>';
 
             if ($toollist == "update") {
                 ?>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
+                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></div></td>
                 <?php
             } else if ($toollist == "delete") {
                 ?>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
+                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></div></td>
                 <?php
             } else if ("all") {
                 ?>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></td>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></td>
+                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></div></td>
+                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></div></td>
 
                 <?php
             } else {
@@ -568,6 +574,7 @@ class DB implements DBDeclare {
                 <?php
             }
             foreach ($row as $key => $val) {
+                
                 if (strpos($key, "_date") > 0) {
                     $phpdate = strtotime($val);
                     $val = date('d-m-Y', $phpdate);
@@ -576,39 +583,22 @@ class DB implements DBDeclare {
                     $startpos = 0;
                     $endpos = strpos($key, "_id");
                     $tbname = substr($key, $startpos, ($endpos) - $startpos);
-                    echo '<td><a style="text-decoration:underline;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . '</a></td>';
+                    echo '<td><div><a style="text-decoration:underline;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . '</a></div></td>';
                 } elseif (array_key_exists($key, $columntype)) {
                     $filepath = $columntype[$key];
                     $ext = pathinfo($val, PATHINFO_EXTENSION);
                     if ($ext == "jpg" || $ext == "png" || $ext == "gif") {
-                        echo '<td><a href="' . $filepath . $val . '">' . $val . '<iframe height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '"></iframe>' . $val . '</a></td>';
+                        echo '<td><div><a href="' . $filepath . $val . '">' . $val . '<iframe height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '"></iframe>' . $val . '</a></div></td>';
                     } else {
-                        echo '<td><a href="' . $filepath . $val . '">' . $val . '</a></td>';
+                        echo '<td><div><a href="' . $filepath . $val . '">' . $val . '</a></div></td>';
                     }
                 } else {
-                    echo '<td>' . $val . '</td>';
+                    echo '<td><div>' . $val . '</div></td>';
                 }
             }
-            if ($externallinks == "addTaskPermissions") {
-                $link = "<td><a href=addTaskPermissions.php?id=" . $row["id"] . ">Add task and permissions</a></td>";
-//                $startpos = strpos($externallinks, "{");
-//                $endpos = strpos($externallinks, "}");
-//                $key = substr($externallinks, $startpos + 1, ($endpos - 1) - $startpos);
-//                $key2 = '{' . $key . '}';
-//                $key = $key . "=" . $row[$key];
-//                $externallinks = str_replace($key2, $key, $externallinks);
-                echo $link;
-            } else if ($externallinks == "addRole") {
-                $link = "<td><a href=addRole.php?id=" . $row["id"] . ">Add role</a></td>";
-                echo $link;
-            } else if ($externallinks == "print_receipt") {
-                $link = "<td><a href=receipt.php?id=" . $row["id"] . ">Print Receipt</a></td>";
-                echo $link;
-            } else if ($externallinks == "Receipt for tip") {
-                $link = "<td><a href=receipt_trip.php?id=" . $row["id"] . ">Print Receipt</a></td>";
-                echo $link;
-            } else if ($externallinks == "Receipt for challan") {
-                $link = "<td><a href=receipt_challan.php?id=" . $row["id"] . ">Print Receipt</a></td>";
+
+            if ($externallinks != "") {
+                $link = "<td><div><a href='$externallinks&id=".$row['id']."'>Edit more</a></div></td>";
                 echo $link;
             }
             ?>
@@ -653,7 +643,7 @@ class DB implements DBDeclare {
                         array2 = Object.values(obj);
                          $('#updatemodel .modal-body').text(\"\");
                         for (var i = 0; i < Object.keys(obj).length; i++) {
-                            $('#updatemodel .modal-body').append(<label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
+                            $('#updatemodel .modal-body').append('<label>'+ array[i] +'</label><input  type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" id=\"' + array[i] + 'id\" class=\"form-control\">');
 
                         }
                         $('#updatemodel .modal-body').append('<input type=\"hidden\" name=\"tbname\" value=\"'+table+'\">');
@@ -692,7 +682,7 @@ class DB implements DBDeclare {
                         
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -715,8 +705,9 @@ class DB implements DBDeclare {
             </div>
         </div>';
     }
+
 //-------------------------this function is not tested yet-------------
-    function showInTableByQuery($query="",$toollist = "all", $externallinks = '', $columntype = array("key" => "value"), $sort = "id asc") {
+    function showInTableByQuery($query = "", $toollist = "all", $externallinks = '', $columntype = array("key" => "value"), $sort = "id asc") {
 
         $this->returnarray = array();
         $columns = array();
@@ -750,7 +741,7 @@ class DB implements DBDeclare {
             });
         </script>
         ';
-        echo '<div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">  ';
+        echo '<br><div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">  ';
         for ($i = 0; $i < count($searchDropDown); $i++) {
             echo $searchDropDown[$i];
         }
@@ -899,8 +890,7 @@ class DB implements DBDeclare {
                         array2 = Object.values(obj);
                          $('#updatemodel .modal-body').text(\"\");
                         for (var i = 0; i < Object.keys(obj).length; i++) {
-                            $('#updatemodel .modal-body').append('<br><label>'+ array[i] +'</label><input type=\"text\" value=\"' + array2[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
-
+                            $('#updatemodel .modal-body').append('<br><label>'+ array[i] +'</label><input type=\"text\" id=\"some\" value=\"' + array2[i] + '\" id=\"' + array[i] + '\" id=\"' + array[i] + '\" name=\"' + array[i] + '\" class=\"form-control\">');
                         }
                         $('#updatemodel .modal-body').append('<br><input type=\"hidden\" name=\"tbname\" value=\"'+table+'\">');
                         $('#updatemodel .modal-body').append('<br><button class=\"btn btn-default btnsub\" onclick=\"getData()\">Update</button>');
@@ -964,7 +954,6 @@ class DB implements DBDeclare {
 
     function select($table, $columns = "*", $where = "", $sort = "id asc") {
         $this->returnarray = array();
-
         if ($where != "" && count($where) > 0) {
             $SQL = "select $columns from $table where ";
             $i = 0;
