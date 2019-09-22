@@ -550,22 +550,21 @@ class DB implements DBDeclare {
         $j = 0;
         $list = $this->select($table, $column, $where, $sort);
         while ($row = $list->fetch_assoc()) {
-            
+
             $j++;
             echo '<tr>';
-
             if ($toollist == "update") {
                 ?>
-                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></div></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
                 <?php
             } else if ($toollist == "delete") {
                 ?>
-                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></div></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
                 <?php
             } else if ("all") {
                 ?>
-                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'>Update</button></div></td>
-                <td><div><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'>Delete</button></div></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
+                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
 
                 <?php
             } else {
@@ -574,7 +573,7 @@ class DB implements DBDeclare {
                 <?php
             }
             foreach ($row as $key => $val) {
-                
+
                 if (strpos($key, "_date") > 0) {
                     $phpdate = strtotime($val);
                     $val = date('d-m-Y', $phpdate);
@@ -598,7 +597,7 @@ class DB implements DBDeclare {
             }
 
             if ($externallinks != "") {
-                $link = "<td><div><a href='$externallinks&id=".$row['id']."'>Edit more</a></div></td>";
+                $link = "<td><div><a href='$externallinks&id=" . $row['id'] . "'>Edit more</a></div></td>";
                 echo $link;
             }
             ?>
