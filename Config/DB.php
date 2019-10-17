@@ -131,253 +131,287 @@ class DB implements DBDeclare {
     public function myProfile($table, $columns = "*", $where = "") {
         $list = $this->select($table, $columns, $where);
         while ($row = $list->fetch_assoc()) {
-            echo '<h1>' . $table . ' profile </h1>';
-            echo '<table class="table table-bordered table-sm"> ';
-            foreach ($row as $key => $val) {
-                echo '<tr><td>' . $key . '</td><td>' . $val . '</td></tr>';
+            ?>
+            <div class="profile-container" style=" margin: auto;
+                 position: relative;
+                 box-shadow: 1px 1px 20px gray,-1px -1px 20px gray;
+                 width: 80%;
+                 border-radius: 10px;
+                 vertical-align: middle;">
+                <h1 style="text-align: center;">
+                    <img style="margin: auto;" src="../images/profile/<?php echo $row["company_logo"] == "avatar-male.png" ?: $row["company_logo"]; ?>" class="img-circle img-responsive" height="100" width="100">
+                    <?php
+                    if (isset($row["Organization_Name"])) {
+                        echo $row["Organization_Name"];
+                    } else if (isset($row["name"])) {
+                        echo $row["name"];
+                    } else if (isset($row["fname"])) {
+                        echo $row["fname"];
+                    }
+                    ?>
+                </h1>
+                <?php
+                echo '<form action="../controller/update.php" method="post" enctype="multipart/form-data"><table class="table table-bordered table-sm"> ';
+                foreach ($row as $key => $val) {
+                    echo '<tr><td class="left-heading" style=" width: 50%; font-weight: 600;" >' . ucwords(str_replace("_", " ", $key)) . '</td><td class="right-value" id="right_' . $key . '"><input name="' . $key . '" style="border:none!important;" type="text" value="' . $val . '"></td></tr>';
+                }
+                ?>
+                <input type="hidden" value="<?php echo $table; ?>" name="tbname" >
+                <tr>
+                    <td> 
+                        <button class="btn btn-warning btn-block" type="submit" id="update">Update</button>
+                    </td>
+                    <td> 
+                        </form>
+                        <form action="../controller/update.php" method="post" enctype="multipart/form-data">
+                            <input type="hidden" value="<?php echo $row["id"]; ?>" name="tbname" >
+                            <input type="hidden" value="<?php echo $table; ?>" name="tbname" >
+                            <button class="btn btn-danger btn-block" id="delete" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <?php
+                echo "</table></div>";
             }
-            echo "</table>";
         }
-    }
 
-    public function login($username, $password, $table) {
-        $returnarray = array();
-        $query = "select * from $table where userid='$username' or contact='$username'  or email='$username' and blocked='0'";
-        $data = $this->conn->query($query);
+        public function login($username, $password, $table) {
+            $returnarray = array();
+            $query = "select * from $table where userid='$username' or contact='$username'  or email='$username' and blocked='0'";
+            $data = $this->conn->query($query);
 
-        if ($data->num_rows > 0) {
-            $onedata = $data->fetch_assoc();
-            $hash = $onedata["password"];
-            if (password_verify($password, $hash)) {
-                $candidates_id = $onedata["id"];
-                $roles_id = $onedata["role"];
-                $api_key = $onedata["api_key"];
-                $_SESSION["loginid"] = $candidates_id;
-                $_SESSION["role"] = $roles_id;
-                $returnarray["status_number"] = 1;
-                $returnarray["userid"] = $candidates_id;
-                $returnarray["role"] = $roles_id;
-                $returnarray["api_key"] = $api_key;
-                return $returnarray;
+            if ($data->num_rows > 0) {
+                $onedata = $data->fetch_assoc();
+                $hash = $onedata["password"];
+                if (password_verify($password, $hash)) {
+                    $candidates_id = $onedata["id"];
+                    $roles_id = $onedata["role"];
+                    $api_key = $onedata["api_key"];
+                    $_SESSION["loginid"] = $candidates_id;
+                    $_SESSION["role"] = $roles_id;
+                    $returnarray["status_number"] = 1;
+                    $returnarray["userid"] = $candidates_id;
+                    $returnarray["role"] = $roles_id;
+                    $returnarray["api_key"] = $api_key;
+                    return $returnarray;
+                } else {
+                    $returnarray["status_number"] = 0;
+                    $returnarray["status_message"] = "Password not found";
+                }
             } else {
                 $returnarray["status_number"] = 0;
-                $returnarray["status_message"] = "Password not found";
+                $returnarray["status_message"] = "Username not found";
             }
-        } else {
-            $returnarray["status_number"] = 0;
-            $returnarray["status_message"] = "Username not found";
+            return $returnarray;
         }
-        return $returnarray;
-    }
 
-    function fileUploadWithTable($files, $table, $id = 0, $location = "./", $size = "11m", $type = "jpg,png") {
+        function fileUploadWithTable($files, $table, $id = 0, $location = "./", $size = "11m", $type = "jpg,png") {
 
-        $returnarray = array();
-        $sizearr = str_split($size);
-        $sizeinnum = 0;
-        $unit = "k";
-        if ($id != 0) {
-            $this->recentinsertedid = $id;
-        } else {
-            if (isset($_SESSION["recentinsertedid"])) {
-                $this->recentinsertedid = $_SESSION["recentinsertedid"];
+            $returnarray = array();
+            $sizearr = str_split($size);
+            $sizeinnum = 0;
+            $unit = "k";
+            if ($id != 0) {
+                $this->recentinsertedid = $id;
             } else {
-                $this->recentinsertedid = 0;
+                if (isset($_SESSION["recentinsertedid"])) {
+                    $this->recentinsertedid = $_SESSION["recentinsertedid"];
+                } else {
+                    $this->recentinsertedid = 0;
+                }
             }
-        }
 
-        for ($i = 0; $i < count($sizearr); $i++) {
-            if (ctype_digit($sizearr[$i])) {
-                $sizeinnum .= $sizearr[$i];
-            } else {
-                $unit = $sizearr[$i];
-                break;
+            for ($i = 0; $i < count($sizearr); $i++) {
+                if (ctype_digit($sizearr[$i])) {
+                    $sizeinnum .= $sizearr[$i];
+                } else {
+                    $unit = $sizearr[$i];
+                    break;
+                }
             }
-        }
-        if ($unit != "" || $unit != NULL || $unit != " ") {
-            if ($unit == "b") {
-                $size = (int) $sizeinnum;
-            } else if ($unit == "k") {
-                $size = (((int) $sizeinnum) * 1024);
-            } else if ($unit == "m") {
-                $size = (((int) $sizeinnum) * 1024 * 1024);
-            } else if ($unit == "g") {
-                $size = (((int) $sizeinnum) * 1024 * 1024 * 1024);
-            }
-        } else {
-            $size = ((int) $sizeinnum);
-        }
-        $boolean = FALSE;
-        foreach ($files as $key1 => $file) {
-            $filenamewextension = $file["name"];
-            if (strpos($file["name"], "/") !== false) {
-                $filepart1 = explode("/", $file["name"]);
-                $filenamewextension = end($filepart1);
-            } elseif (strpos($file["name"], "\\") !== false) {
-
-                $filepart1 = explode("\\", $file["name"]);
-                $filenamewextension = end($filepart1);
+            if ($unit != "" || $unit != NULL || $unit != " ") {
+                if ($unit == "b") {
+                    $size = (int) $sizeinnum;
+                } else if ($unit == "k") {
+                    $size = (((int) $sizeinnum) * 1024);
+                } else if ($unit == "m") {
+                    $size = (((int) $sizeinnum) * 1024 * 1024);
+                } else if ($unit == "g") {
+                    $size = (((int) $sizeinnum) * 1024 * 1024 * 1024);
+                }
             } else {
+                $size = ((int) $sizeinnum);
+            }
+            $boolean = FALSE;
+            foreach ($files as $key1 => $file) {
                 $filenamewextension = $file["name"];
-            }
+                if (strpos($file["name"], "/") !== false) {
+                    $filepart1 = explode("/", $file["name"]);
+                    $filenamewextension = end($filepart1);
+                } elseif (strpos($file["name"], "\\") !== false) {
+
+                    $filepart1 = explode("\\", $file["name"]);
+                    $filenamewextension = end($filepart1);
+                } else {
+                    $filenamewextension = $file["name"];
+                }
 
 
-            $filepart = explode(".", $file["name"]);
-            $extension = end($filepart);
-            if ($file["size"] <= $size) {
-                $boolean = TRUE;
-            } else {
-                $boolean = FALSE;
-                array_push($returnarray, 0);
-                array_push($returnarray, "File size exceed limits: Limit given=$size byte and file size=" . $file["size"] . " byte");
-            }
-            if (strpos($type, $extension) !== false) {
-                $boolean = TRUE;
-            } else {
-                $boolean = FALSE;
-                array_push($returnarray, 0);
-                array_push($returnarray, "File type not matched: Type given=$type and file type=" . $extension);
-            }
-            if ($location == "./") {
-                $name = "$location" . $file["name"];
-            } else {
-                $name = "$location/" . $file["name"];
-            }
+                $filepart = explode(".", $file["name"]);
+                $extension = end($filepart);
+                if ($file["size"] <= $size) {
+                    $boolean = TRUE;
+                } else {
+                    $boolean = FALSE;
+                    array_push($returnarray, 0);
+                    array_push($returnarray, "File size exceed limits: Limit given=$size byte and file size=" . $file["size"] . " byte");
+                }
+                if (strpos($type, $extension) !== false) {
+                    $boolean = TRUE;
+                } else {
+                    $boolean = FALSE;
+                    array_push($returnarray, 0);
+                    array_push($returnarray, "File type not matched: Type given=$type and file type=" . $extension);
+                }
+                if ($location == "./") {
+                    $name = "$location" . $file["name"];
+                } else {
+                    $name = "$location/" . $file["name"];
+                }
 
-            if ($boolean === TRUE) {
-                $uploadstatus = move_uploaded_file($file["tmp_name"], $name);
+                if ($boolean === TRUE) {
+                    $uploadstatus = move_uploaded_file($file["tmp_name"], $name);
 
-                if ($uploadstatus) {
-                    $data = array($key1 => $filenamewextension);
-                    var_dump($data);
-
-                    if ($this->recentinsertedid > 0) {
-                        $message = $this->update($data, $table, $this->recentinsertedid);
-                        array_push($returnarray, $message);
+                    if ($uploadstatus) {
+                        $data = array($key1 => $filenamewextension);
+//                    var_dump($data);
+                        array_push($returnarray, 1);
+                        array_push($returnarray, "File uploaded file info: $name");
+                        if ($this->recentinsertedid > 0) {
+                            $message = $this->update($data, $table, $this->recentinsertedid);
+                            array_push($returnarray, $message);
+                        } else {
+                            $this->insert($data, $table);
+                        }
                     } else {
-                        $this->insert($data, $table);
+                        array_push($returnarray, 0);
+                        array_push($returnarray, "File not uploaded file info: $name");
+                        array_push($returnarray, $uploadstatus);
                     }
-                    array_push($returnarray, 1);
-                    array_push($returnarray, "File uploaded file info: $name");
                 } else {
                     array_push($returnarray, 0);
                     array_push($returnarray, "File not uploaded file info: $name");
-                    array_push($returnarray, $uploadstatus);
+                }
+            }
+            return $returnarray;
+        }
+
+        function fileUpload($files, $location = "./", $size = "11m", $type = "jpg,png") {
+            $returnarray = array();
+            $sizearr = str_split($size);
+            $sizeinnum = 0;
+            $unit = "k";
+            for ($i = 0; $i < count($sizearr); $i++) {
+                if (ctype_digit($sizearr[$i])) {
+                    $sizeinnum .= $sizearr[$i];
+                } else {
+                    $unit = $sizearr[$i];
+                    break;
+                }
+            }
+            if ($unit != "" || $unit != NULL || $unit != " ") {
+                if ($unit == "b") {
+                    $size = (int) $sizeinnum;
+                } else if ($unit == "k") {
+                    $size = (((int) $sizeinnum) * 1024);
+                } else if ($unit == "m") {
+                    $size = (((int) $sizeinnum) * 1024 * 1024);
+                } else if ($unit == "g") {
+                    $size = (((int) $sizeinnum) * 1024 * 1024 * 1024);
                 }
             } else {
-                array_push($returnarray, 0);
-                array_push($returnarray, "File not uploaded file info: $name");
+                $size = ((int) $sizeinnum);
             }
-        }
-        return $returnarray;
-    }
-
-    function fileUpload($files, $location = "./", $size = "11m", $type = "jpg,png") {
-        $returnarray = array();
-        $sizearr = str_split($size);
-        $sizeinnum = 0;
-        $unit = "k";
-        for ($i = 0; $i < count($sizearr); $i++) {
-            if (ctype_digit($sizearr[$i])) {
-                $sizeinnum .= $sizearr[$i];
-            } else {
-                $unit = $sizearr[$i];
-                break;
-            }
-        }
-        if ($unit != "" || $unit != NULL || $unit != " ") {
-            if ($unit == "b") {
-                $size = (int) $sizeinnum;
-            } else if ($unit == "k") {
-                $size = (((int) $sizeinnum) * 1024);
-            } else if ($unit == "m") {
-                $size = (((int) $sizeinnum) * 1024 * 1024);
-            } else if ($unit == "g") {
-                $size = (((int) $sizeinnum) * 1024 * 1024 * 1024);
-            }
-        } else {
-            $size = ((int) $sizeinnum);
-        }
-        $boolean = FALSE;
-        foreach ($files as $key1 => $file) {
-            $filepart = explode(".", $file["name"]);
-            $extension = end($filepart);
-            if ($file["size"] <= $size) {
-                $boolean = TRUE;
-            } else {
-                $boolean = FALSE;
-                array_push($returnarray, 0);
-                array_push($returnarray, "File size exceed limits: Limit given=$size byte and file size=" . $file["size"] . " byte");
-            }
-            if (strpos($type, $extension) !== false) {
-                $boolean = TRUE;
-            } else {
-                $boolean = FALSE;
-                array_push($returnarray, 0);
-                array_push($returnarray, "File type not matched: Type given=$type and file type=" . $extension);
-            }
-            if ($location == "./") {
-                $name = "$location" . time() . $file["name"];
-            } else {
-                $name = "$location/" . time() . $file["name"];
-            }
-            if ($boolean === TRUE) {
-                $uploadstatus = move_uploaded_file($file["tmp_name"], $name);
-                if ($uploadstatus) {
-                    array_push($returnarray, 1);
-                    array_push($returnarray, "File uploaded file info: $name");
-                    array_push($returnarray, $uploadstatus);
+            $boolean = FALSE;
+            foreach ($files as $key1 => $file) {
+                $filepart = explode(".", $file["name"]);
+                $extension = end($filepart);
+                if ($file["size"] <= $size) {
+                    $boolean = TRUE;
+                } else {
+                    $boolean = FALSE;
+                    array_push($returnarray, 0);
+                    array_push($returnarray, "File size exceed limits: Limit given=$size byte and file size=" . $file["size"] . " byte");
+                }
+                if (strpos($type, $extension) !== false) {
+                    $boolean = TRUE;
+                } else {
+                    $boolean = FALSE;
+                    array_push($returnarray, 0);
+                    array_push($returnarray, "File type not matched: Type given=$type and file type=" . $extension);
+                }
+                if ($location == "./") {
+                    $name = "$location" . time() . $file["name"];
+                } else {
+                    $name = "$location/" . time() . $file["name"];
+                }
+                if ($boolean === TRUE) {
+                    $uploadstatus = move_uploaded_file($file["tmp_name"], $name);
+                    if ($uploadstatus) {
+                        array_push($returnarray, 1);
+                        array_push($returnarray, "File uploaded file info: $name");
+                        array_push($returnarray, $uploadstatus);
+                    } else {
+                        array_push($returnarray, 0);
+                        array_push($returnarray, "File not uploaded file info: $name");
+                        array_push($returnarray, $uploadstatus);
+                    }
                 } else {
                     array_push($returnarray, 0);
                     array_push($returnarray, "File not uploaded file info: $name");
-                    array_push($returnarray, $uploadstatus);
                 }
-            } else {
-                array_push($returnarray, 0);
-                array_push($returnarray, "File not uploaded file info: $name");
             }
+            return $returnarray;
         }
-        return $returnarray;
-    }
 
-    function showInTableWithoutTool($table, $column = "*", $where = "") {
+        function showInTableWithoutTool($table, $column = "*", $where = "") {
 
-        $this->returnarray = array();
-        $columns = array();
-        $list = $this->select($table, $column, $where);
-        while ($row = $list->fetch_assoc()) {
-            $tempcol = array();
-            foreach ($row as $key => $val) {
-                array_push($tempcol, "$key");
+            $this->returnarray = array();
+            $columns = array();
+            $list = $this->select($table, $column, $where);
+            while ($row = $list->fetch_assoc()) {
+                $tempcol = array();
+                foreach ($row as $key => $val) {
+                    array_push($tempcol, "$key");
+                }
+                if (count($tempcol) >= count($columns)) {
+                    $columns = $tempcol;
+                }
             }
-            if (count($tempcol) >= count($columns)) {
-                $columns = $tempcol;
+            ?>
+            <?php
+            echo '<div id="search" class="table-responsive table-hover table-striped">' . '<caption><h1 style="text-align:center; background-color:rgba(5,5,5,.7); color:white; margin:0px; text-transform:capitalize;">' . $table . ' Records <span id="hideshow" style="font-size:20px;"></span></h1> </caption>';
+            echo '<table class="table table-bordered table-sm">'
+            . '<thead><tr class="thead-light">';
+            for ($i = 0; $i < count($columns); $i++) {
+                echo "<th>" . ucwords(str_replace("_", " ", $columns[$i])) . "</th>";
             }
-        }
-        ?>
-        <?php
-        echo '<div id="search" class="table-responsive table-hover table-striped">' . '<caption><h1 style="text-align:center; background-color:rgba(5,5,5,.7); color:white; margin:0px; text-transform:capitalize;">' . $table . ' Records <span id="hideshow" style="font-size:20px;"></span></h1> </caption>';
-        echo '<table class="table table-bordered table-sm">'
-        . '<thead><tr class="thead-light">';
-        for ($i = 0; $i < count($columns); $i++) {
-            echo "<th>" . ucwords(str_replace("_", " ", $columns[$i])) . "</th>";
-        }
-        echo ' </tr></thead><tbody>';
-        $j = 0;
-        $list = $this->select($table, $column, $where);
-        while ($row = $list->fetch_assoc()) {
-            $j++;
-            echo '<tr>';
-            foreach ($row as $key => $val) {
-                echo '<td>' . $val . '</td>';
-            }
+            echo ' </tr></thead><tbody>';
+            $j = 0;
+            $list = $this->select($table, $column, $where);
+            while ($row = $list->fetch_assoc()) {
+                $j++;
+                echo '<tr>';
+                foreach ($row as $key => $val) {
+                    echo '<td>' . $val . '</td>';
+                }
 
 //            echo "<td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord(" . $row["id"] . ",\"" . $table . "\")'  id='updatebtn'>Update</button></td>";
 //            echo "<td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord(" . $row["id"] . ",\"" . $table . "\")' id='deletebtn'>Delete</button></td>";
-            echo '</tr>';
-        }
-        echo '</tbody></table></div></div>';
-        echo '<script>
+                echo '</tr>';
+            }
+            echo '</tbody></table></div></div>';
+            echo '<script>
             function deleteRecord(id, table) {
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function () {
@@ -396,7 +430,7 @@ class DB implements DBDeclare {
 
 
         </script>';
-        echo " <script>
+            echo " <script>
             function updateRecord(id,column, table) {
                 var a = $('#updateinfo').text();
                 $('.modal-body').css(\"background-color\", \"red\");
@@ -440,7 +474,7 @@ class DB implements DBDeclare {
                 });
             }
         </script>";
-        echo '<div class="modal fade" id="updatemodel" role="dialog">
+            echo '<div class="modal fade" id="updatemodel" role="dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -457,7 +491,7 @@ class DB implements DBDeclare {
             </div>
         </div>';
 
-        echo '<div class="modal fade" id="deletemodel" role="dialog">
+            echo '<div class="modal fade" id="deletemodel" role="dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -473,30 +507,30 @@ class DB implements DBDeclare {
                 </div>
             </div>
         </div>';
-    }
-
-    function showInTable($table, $column = "*", $where = "", $toollist = "all", $externallinks = '', $columntype = array("key" => "value"), $sort = "id asc") {
-        $this->returnarray = array();
-        $columns = array();
-        $list = $this->select($table, $column, $where, $sort);
-        $searchDropDown = array();
-
-        while ($row = $list->fetch_assoc()) {
-            $tempcol = array();
-            $searchDropDowns = array();
-            foreach ($row as $key => $val) {
-                array_push($tempcol, "$key");
-                array_push($searchDropDowns, "<option value='$key'>$key</option>");
-            }
-            if (count($tempcol) >= count($columns)) {
-                $columns = $tempcol;
-                $searchDropDown = $searchDropDowns;
-            }
         }
-        ?>
 
-        <?php
-        echo '        
+        function showInTable($table, $column = "*", $where = "", $toollist = "all", $externallinks = '', $columntype = array("key" => "value"), $sort = "id asc") {
+            $this->returnarray = array();
+            $columns = array();
+            $list = $this->select($table, $column, $where, $sort);
+            $searchDropDown = array();
+
+            while ($row = $list->fetch_assoc()) {
+                $tempcol = array();
+                $searchDropDowns = array();
+                foreach ($row as $key => $val) {
+                    array_push($tempcol, "$key");
+                    array_push($searchDropDowns, "<option value='$key'>$key</option>");
+                }
+                if (count($tempcol) >= count($columns)) {
+                    $columns = $tempcol;
+                    $searchDropDown = $searchDropDowns;
+                }
+            }
+            ?>
+
+            <?php
+            echo '        
             <script>
             $(document).ready(function () {
                 $("#myInput").on("keyup", function () {
@@ -508,99 +542,99 @@ class DB implements DBDeclare {
             });
         </script>
         ';
-        echo '<div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">';
-        for ($i = 0; $i < count($searchDropDown); $i++) {
-            echo $searchDropDown[$i];
-        }
-        echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Search'
-        . '." class="btn btn-success btn-sm"><input type="hidden" name="tbname" value="' . $table . '"></form>&nbsp;<button type="button" class="btn btn-success printExcel btn-sm"> Print Excel</button></div>';
-        echo '<table id="myTable" class="table table-sm">'
-        . '<thead><tr class="sticky-top" style="background-color:#4272d7;  color:white;">';
-        if ($toollist == "update") {
-            ?>
-            <th></th>
-            <?php
-        } else if ($toollist == "delete") {
-            ?>
-            <th></th>
-            <?php
-        } else if ("all") {
-            ?>
-            <th></th>
-            <th></th>
-            <?php
-        } else {
-            ?>
-
-            <?php
-        }
-        for ($i = 0; $i < count($columns); $i++) {
-            if ($sort == "id asc") {
-                $sort = "id desc";
-            } else if ($sort == "id desc") {
-                $sort = "id asc";
+            echo '<div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">';
+            for ($i = 0; $i < count($searchDropDown); $i++) {
+                echo $searchDropDown[$i];
             }
-            if ($columns[$i] == "id") {
-                echo "<th></i><a href='?sort=$sort' style='text-decoration:none;color:white;'>&blacktriangledown;" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</a></th>";
-            } else {
-                echo "<th style='word-wrap: break-word;paddng:0px;pargin:0px;'>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</th>";
-            }
-        }
-        echo ' </tr></thead><tbody>';
-        $j = 0;
-        $list = $this->select($table, $column, $where, $sort);
-        while ($row = $list->fetch_assoc()) {
-
-            $j++;
-            echo '<tr>';
+            echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Search'
+            . '." class="btn btn-success btn-sm"><input type="hidden" name="tbname" value="' . $table . '"></form>&nbsp;<button type="button" class="btn btn-success printExcel btn-sm">Export</button></div>';
+            echo '<table id="myTable" class="table table-sm">'
+            . '<thead><tr class="sticky-top" style="background-color:#4272d7;  color:white;">';
             if ($toollist == "update") {
                 ?>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
+                <th></th>
                 <?php
             } else if ($toollist == "delete") {
                 ?>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
+                <th></th>
                 <?php
-            } else if ("all") {
+            } else if ($toollist == "all") {
                 ?>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
-                <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
-
+                <th></th>
+                <th></th>
                 <?php
             } else {
                 ?>
 
                 <?php
             }
-            foreach ($row as $key => $val) {
-
-                if (strpos($key, "_date") > 0) {
-                    $phpdate = strtotime($val);
-                    $val = date('d-m-Y', $phpdate);
+            for ($i = 0; $i < count($columns); $i++) {
+                if ($sort == "id asc") {
+                    $sort = "id desc";
+                } else if ($sort == "id desc") {
+                    $sort = "id asc";
                 }
-                if (strpos($key, "_id") > 0) {
-                    $startpos = 0;
-                    $endpos = strpos($key, "_id");
-                    $tbname = substr($key, $startpos, ($endpos) - $startpos);
-                    echo '<td><div><a style="text-decoration:underline;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . '</a></div></td>';
-                } elseif (array_key_exists($key, $columntype)) {
-                    $filepath = $columntype[$key];
-                    $ext = pathinfo($val, PATHINFO_EXTENSION);
-                    if ($ext == "jpg" || $ext == "png" || $ext == "gif") {
-                        echo '<td><div><a href="' . $filepath . $val . '">' . $val . '<iframe height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '"></iframe>' . $val . '</a></div></td>';
-                    } else {
-                        echo '<td><div><a href="' . $filepath . $val . '">' . $val . '</a></div></td>';
-                    }
+                if ($columns[$i] == "id") {
+                    echo "<th></i><a href='?sort=$sort' style='text-decoration:none;color:white;'>&blacktriangledown;" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</a></th>";
                 } else {
-                    echo '<td><div>' . $val . '</div></td>';
+                    echo "<th style='word-wrap: break-word;paddng:0px;pargin:0px;'>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</th>";
                 }
             }
+            echo ' </tr></thead><tbody>';
+            $j = 0;
+            $list = $this->select($table, $column, $where, $sort);
+            while ($row = $list->fetch_assoc()) {
 
-            if ($externallinks != "") {
-                $link = "<td><div><a href='$externallinks&id=" . $row['id'] . "'>Edit more</a></div></td>";
-                echo $link;
-            }
-            ?>
+                $j++;
+                echo '<tr>';
+                if ($toollist == "update") {
+                    ?>
+                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
+                    <?php
+                } else if ($toollist == "delete") {
+                    ?>
+                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
+                    <?php
+                } else if ($toollist == "all") {
+                    ?>
+                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
+                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
+
+                    <?php
+                } else {
+                    ?>
+
+                    <?php
+                }
+                foreach ($row as $key => $val) {
+
+                    if (strpos($key, "_date") > 0) {
+                        $phpdate = strtotime($val);
+                        $val = date('d-m-Y', $phpdate);
+                    }
+                    if (strpos($key, "_id") > 0) {
+                        $startpos = 0;
+                        $endpos = strpos($key, "_id");
+                        $tbname = substr($key, $startpos, ($endpos) - $startpos);
+                        echo '<td><div><a style="text-decoration:underline;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . '</a></div></td>';
+                    } elseif (array_key_exists($key, $columntype)) {
+                        $filepath = $columntype[$key];
+                        $ext = pathinfo($val, PATHINFO_EXTENSION);
+                        if ($ext == "jpg" || $ext == "png" || $ext == "gif") {
+                            echo '<td><div><a href="' . $filepath . $val . '">' . $val . '<iframe height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '"></iframe>' . $val . '</a></div></td>';
+                        } else {
+                            echo '<td><div><a href="' . $filepath . $val . '">' . $val . '</a></div></td>';
+                        }
+                    } else {
+                        echo '<td><div>' . $val . '</div></td>';
+                    }
+                }
+
+                if ($externallinks != "") {
+                    $link = "<td><div><a href='$externallinks&id=" . $row['id'] . "'>Edit more</a></div></td>";
+                    echo $link;
+                }
+                ?>
             </tr>
             <?php
         }
@@ -784,7 +818,7 @@ class DB implements DBDeclare {
             $j++;
             echo '<tr>';
 
-           
+
             if ($toollist == "update") {
                 ?>
                 <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
