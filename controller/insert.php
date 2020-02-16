@@ -1,14 +1,30 @@
 <?php
 
 session_start();
+
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
 include '../Config/Configuration.php';
-//$connection = new connection();
-//$conn = $connection->build("toppackers", "root", "", "create");
-//$configure = new Configuration($conn);
-//$configure->configure("creation", "create");
-$_POST["role"] = "user";
+if (isset($_POST["api_key"]) && isset($_SESSION["loginid"])) {
+    $user_api_key = $_POST["api_key"];
+    $loginid = $_SESSION["loginid"];
+    $users = $db->select("user", "*", array("id" => $loginid));
+    $user = $users->fetch_assoc();
+    $db_user_api_key = $user["api_key"];
+    if ($db_user_api_key == $user_api_key) {
+        $_POST["role"] = isset($_POST["role"]) ? $_POST["role"] : "user";
+    } else {
+        die("<h2>API key is invalid</h2>");
+    }
+} else {
+    $_POST["role"] = "user";
+}
+$location = "../img/user/";
+$tbname = $_POST["tbname"];
+if ($tbname == "user") {
+    $location = "../img/user/";
+}
+unset($_POST["tbname"]);
 $db = new DB($conn);
 $auto = array();
 $name = $_POST["name"];
@@ -18,11 +34,11 @@ array_push($auto, $key);
 array_push($auto, $userid);
 $_POST["api_key"] = $key;
 $_POST["userid"] = $userid;
-$_POST["type"] = "user";
-$_POST["tbname"] = "user";
+
+$tbname = "user";
 $useridExist = "yes";
 while ($useridExist != "no") {
-    $data = $db->select($_POST["tbname"], "*", array("userid" => $_POST["userid"]));
+    $data = $db->select($tbname, "*", array("userid" => $_POST["userid"]));
     if ($data->num_rows > 0) {
         $useridExist = "yes";
         $_POST["userid"] = $db->userId($name);
@@ -36,21 +52,35 @@ if (isset($_POST["info"])) {
 }
 $info = array();
 if ($useridExist == "no") {
-    if ($db->exist($_POST["tbname"], array("email" => $_POST["email"])) == "no") {
-        $info = $db->insert($_POST, $_POST["tbname"]);
-
+    if ($db->exist($tbname, array("email" => $_POST["email"])) == "no") {
+        $info = $db->insert($_POST, $tbname);
+//var_dump($info);
+// if ($db->apichecker($_POST["api_key"], $_POST["user_id"], "user")) {
+        if (isset($_SESSION["recentinsertedid"])) {
+            $recentinsertedid = $_SESSION["recentinsertedid"];
+        }
         if ($info[0] == 1) {
-            $_SESSION["loginid"] = $_SESSION["recentinsertedid"];
-            $_SESSION["role"] = $_POST["role"];
-            $info["status"] == "success";
-            $info["key"] = $key;
-            $info["uniqueid"] = $userid;
-            $info["message"] = "Data  saved";
-            $info["userid"] = $_SESSION["recentinsertedid"];
-            $db->sendBack($_SERVER, "?" . http_build_query($info));
+            if (count($_FILES) > 0) {
+                $return = $db->fileUploadWithTable($_FILES, $tbname, $recentinsertedid, $location, "50m", "JPG,PNG,JFIF,jpg,png,jfif");
+                $return = array();
+                $return["status"] = "success";
+                $return["message"] = "Data and image saved";
+                $return["recentinsertedid"] = $_SESSION["recentinsertedid"];
+//        var_dump($return);
+                $db->sendBack($_SERVER, "?" . http_build_query($return));
+            } else {
+                $info = array();
+                $info["status"] = "success";
+                $info["message"] = "Data  saved";
+                $info["recentinsertedid"] = $_SESSION["recentinsertedid"] or 0;
+//        var_dump($info);
+                $db->sendBack($_SERVER, "?" . http_build_query($info));
+            }
         } else if ($info[0] == 0) {
+
             $info["status"] = "failed";
-            $info["message"] = "Data not saved ! server error";
+            $info["message"] = "Data not saved";
+//    var_dump($info);
             $db->sendBack($_SERVER, "?" . http_build_query($info));
         }
     } else {

@@ -1,5 +1,7 @@
+
 <?php
 $sort = "";
+date_default_timezone_set("Asia/Calcutta");
 if (isset($_GET["sort"])) {
     $sort = $_GET["sort"];
 } else {
@@ -128,6 +130,12 @@ class DB implements DBDeclare {
         return $date;
     }
 
+    public function getIndianTime() {
+        date_default_timezone_set("Asia/Calcutta");
+        $date = date("H:i:s");
+        return $date;
+    }
+
     public function myProfile($table, $columns = "*", $where = "") {
         $list = $this->select($table, $columns, $where);
         while ($row = $list->fetch_assoc()) {
@@ -187,12 +195,14 @@ class DB implements DBDeclare {
                     $candidates_id = $onedata["id"];
                     $roles_id = $onedata["role"];
                     $api_key = $onedata["api_key"];
+                    $name = $onedata["name"];
                     $_SESSION["loginid"] = $candidates_id;
                     $_SESSION["role"] = $roles_id;
                     $returnarray["status_number"] = 1;
                     $returnarray["userid"] = $candidates_id;
                     $returnarray["role"] = $roles_id;
                     $returnarray["api_key"] = $api_key;
+                    $returnarray["name"] = $name;
                     return $returnarray;
                 } else {
                     $returnarray["status_number"] = 0;
@@ -264,14 +274,14 @@ class DB implements DBDeclare {
                 } else {
                     $boolean = FALSE;
                     array_push($returnarray, 0);
-                    array_push($returnarray, "File size exceed limits: Limit given=$size byte and file size=" . $file["size"] . " byte");
+                    array_push($returnarray, "<br>File size exceed limits: Limit given=$size byte and file size=" . $file["size"] . " byte");
                 }
                 if (strpos($type, $extension) !== false) {
                     $boolean = TRUE;
                 } else {
                     $boolean = FALSE;
                     array_push($returnarray, 0);
-                    array_push($returnarray, "File type not matched: Type given=$type and file type=" . $extension);
+                    array_push($returnarray, "<br>File type not matched: Type attached=$type and file type=" . $extension);
                 }
                 if ($location == "./") {
                     $name = "$location" . $file["name"];
@@ -286,7 +296,7 @@ class DB implements DBDeclare {
                         $data = array($key1 => $filenamewextension);
 //                    var_dump($data);
                         array_push($returnarray, 1);
-                        array_push($returnarray, "File uploaded file info: $name");
+                        array_push($returnarray, "<br>File uploaded file info: $name");
                         if ($this->recentinsertedid > 0) {
                             $message = $this->update($data, $table, $this->recentinsertedid);
                             array_push($returnarray, $message);
@@ -295,12 +305,12 @@ class DB implements DBDeclare {
                         }
                     } else {
                         array_push($returnarray, 0);
-                        array_push($returnarray, "File not uploaded file info: $name");
+                        array_push($returnarray, "<br>File not uploaded file info: $name");
                         array_push($returnarray, $uploadstatus);
                     }
                 } else {
                     array_push($returnarray, 0);
-                    array_push($returnarray, "File not uploaded file info: $name");
+                    array_push($returnarray, "<br>File not uploaded file info: $name");
                 }
             }
             return $returnarray;
@@ -348,7 +358,7 @@ class DB implements DBDeclare {
                 } else {
                     $boolean = FALSE;
                     array_push($returnarray, 0);
-                    array_push($returnarray, "File type not matched: Type given=$type and file type=" . $extension);
+                    array_push($returnarray, "File type not matched: Type attached=$type and file type=" . $extension);
                 }
                 if ($location == "./") {
                     $name = "$location" . time() . $file["name"];
@@ -391,7 +401,7 @@ class DB implements DBDeclare {
             ?>
             <?php
             echo '<div id="search" class="table-responsive table-hover table-striped">' . '<caption><h1 style="text-align:center; background-color:rgba(5,5,5,.7); color:white; margin:0px; text-transform:capitalize;">' . $table . ' Records <span id="hideshow" style="font-size:20px;"></span></h1> </caption>';
-            echo '<table class="table table-bordered table-sm">'
+            echo '<table class="table table-bordered table-sm table-bordered" >'
             . '<thead><tr class="thead-light">';
             for ($i = 0; $i < count($columns); $i++) {
                 echo "<th>" . ucwords(str_replace("_", " ", $columns[$i])) . "</th>";
@@ -513,8 +523,7 @@ class DB implements DBDeclare {
             $this->returnarray = array();
             $columns = array();
             $list = $this->select($table, $column, $where, $sort);
-            $searchDropDown = array();
-
+//          Search dropdown array in table---------------------------------------
             while ($row = $list->fetch_assoc()) {
                 $tempcol = array();
                 $searchDropDowns = array();
@@ -528,7 +537,6 @@ class DB implements DBDeclare {
                 }
             }
             ?>
-
             <?php
             echo '        
             <script>
@@ -542,14 +550,14 @@ class DB implements DBDeclare {
             });
         </script>
         ';
-            echo '<div class="form-group form-inline"><form action="searchedData.php"> <label>Search.....</lable> <span><select class="form-control" name="searchCol">';
+            echo '<div class="form-group form-inline" style="margin:0px; "><form action="searchedData.php"><label><strong> ' . $list->num_rows . ' Records in ' . ucwords(str_replace("_", "&nbsp;", $table)) . '&nbsp;</strong></lable> <span><select class="form-control" name="searchCol">';
             for ($i = 0; $i < count($searchDropDown); $i++) {
                 echo $searchDropDown[$i];
             }
-            echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search.."> <input type="submit" value="Search'
-            . '." class="btn btn-success btn-sm"><input type="hidden" name="tbname" value="' . $table . '"></form>&nbsp;<button type="button" class="btn btn-success printExcel btn-sm">Export</button></div>';
-            echo '<table id="myTable" class="table table-sm">'
-            . '<thead><tr class="sticky-top" style="background-color:#4272d7;  color:white;">';
+            echo '</select></span><input class="form-control" id="myInput" type="text" name="searching_data" placeholder="Search..">&nbsp;<button type="submit"'
+            . '." class="btn btn-success btn-sm">Search</button><input type="hidden" name="tbname" value="' . $table . '"></form>&nbsp;<button type="button" class="btn btn-success printExcel btn-sm">Export</button> <button class="btn btn-sm btn-warning">Next &gt;</button><button class="btn btn-sm btn-warning">&lt; Prev</button></div>';
+            echo '<div class="table-responsive table--no-card" style="max-height: 300px; overflow: scroll;"><table id="myTable" style="box-shadow:1px -1px 10px black;  padding:10px;" class="table table-sm table-hover table-striped table-bordered">'
+            . '<thead><tr class="sticky-top" style="background-color:#4272d7;color:white;">';
             if ($toollist == "update") {
                 ?>
                 <th></th>
@@ -568,6 +576,7 @@ class DB implements DBDeclare {
 
                 <?php
             }
+//            this loop is for table heading --------------------------------------------
             for ($i = 0; $i < count($columns); $i++) {
                 if ($sort == "id asc") {
                     $sort = "id desc";
@@ -580,25 +589,44 @@ class DB implements DBDeclare {
                     echo "<th style='word-wrap: break-word;paddng:0px;pargin:0px;'>" . ucwords(str_replace("_", "&nbsp;", $columns[$i])) . "</th>";
                 }
             }
+//            end of table heading---------------------------
             echo ' </tr></thead><tbody>';
             $j = 0;
             $list = $this->select($table, $column, $where, $sort);
+
             while ($row = $list->fetch_assoc()) {
 
                 $j++;
                 echo '<tr>';
                 if ($toollist == "update") {
-                    ?>
-                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
-                    <?php
+                    if (is_array($column)) {
+                        echo '<form method="POST" action="../controller/update.php" enctype="multipart/form-data">';
+                        ?>
+                        <td><button type="submit" class='btn btn-success btn-sm'> Save</button></td>
+                        <?php
+                    } else {
+                        ?>
+                        <td><button type="button" class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
+                        <?php
+                    }
                 } else if ($toollist == "delete") {
                     ?>
-                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
+                    <td><button type="button" class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
                     <?php
                 } else if ($toollist == "all") {
+                    if (is_array($column)) {
+                        echo '<form method="POST" action="../controller/update.php" enctype="multipart/form-data">';
+                        ?>
+                        <td><button type="submit" class='btn btn-success btn-sm'> Save</button></td>
+                        <?php
+                    } else {
+                        ?>
+                        <td><button type="button" class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
+                        <?php
+                    }
                     ?>
-                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#updatemodel' onclick='updateRecord("<?php echo $row["id"]; ?>", "<?php echo $column; ?>", "<?php echo $table; ?>")'  id='updatebtn'><i class="fas fa-edit"></i></button></td>
-                    <td><button class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
+
+                    <td><button type="button" class='btn btn-outline-success btn-sm' data-toggle='modal' data-target='#deletemodel' onclick='deleteRecord("<?php echo $row["id"]; ?>", "<?php echo $table; ?>")' id='deletebtn'><i class="far fa-trash-alt"></i></button></td>
 
                     <?php
                 } else {
@@ -606,8 +634,8 @@ class DB implements DBDeclare {
 
                     <?php
                 }
+//          here we set the display name instead of showing id of referenced table-----------------------
                 foreach ($row as $key => $val) {
-
                     if (strpos($key, "_date") > 0) {
                         $phpdate = strtotime($val);
                         $val = date('d-m-Y', $phpdate);
@@ -616,25 +644,94 @@ class DB implements DBDeclare {
                         $startpos = 0;
                         $endpos = strpos($key, "_id");
                         $tbname = substr($key, $startpos, ($endpos) - $startpos);
-                        echo '<td><div><a style="text-decoration:underline;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . '</a></div></td>';
+                        $tb_key = explode("_", $key);
+                        $name_id = $val;
+                        if ($tb_key[0] == "user" || $tb_key[0] == "transport" || $tb_key[0] == "branches") {
+                            $users = $this->select($tb_key[0], "id,name", array("id" => $val));
+                            $user = $users->fetch_assoc();
+                            $name_id = $user["name"];
+                        } else if ($tb_key[0] == "services") {
+//                        }else if($tb_key[0] == "services" || $tb_key[0] == "service_category"){
+                            $users = $this->select($tb_key[0], "id,title", array("id" => $val));
+                            $user = $users->fetch_assoc();
+                            $name_id = $user["title"];
+                        } else if ($tb_key[0] == "client") {
+                            $users = $this->select("client_info", "id,name", array("id" => $val));
+                            $user = $users->fetch_assoc();
+                            $name_id = $user["name"];
+                        } else if ($tb_key[0] == "created") {
+                            $users = $this->select("user", "id,name", array("id" => $val));
+                            $user = $users->fetch_assoc();
+                            $name_id = $user["name"];
+                            $tbname="user";
+                        }
+                        echo '<td><div><a title="Id and name" style="text-decoration:none;padding:2px;" href="detail.php?id=' . $val . '&tbname=' . $tbname . '">' . $val . " - " . $name_id . '</a></div></td>';
+//--------------------end of displaying name instead of showing id------------------------------------------------
                     } elseif (array_key_exists($key, $columntype)) {
                         $filepath = $columntype[$key];
                         $ext = pathinfo($val, PATHINFO_EXTENSION);
-                        if ($ext == "jpg" || $ext == "png" || $ext == "gif") {
-                            echo '<td><div><a href="' . $filepath . $val . '">' . $val . '<iframe height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '"></iframe>' . $val . '</a></div></td>';
+                        echo '<td><div>';
+                        if ($ext == "jpg" || $ext == "png" || $ext == "gif" || $ext == "JPG" || $ext == "PNG" || $ext == "GIF") {
+                            echo '<a href="' . $filepath . $val . '"><img height="30" width="30" style"margin:10px; padding:5px;" src="' . $filepath . $val . '">' . $val . '</a>';
                         } else {
-                            echo '<td><div><a href="' . $filepath . $val . '">' . $val . '</a></div></td>';
+                            echo '<a href="' . $filepath . $val . '">' . $val . '</a>';
                         }
+                        if (is_array($column)) {
+                            echo '<input name="' . $key . '" type="' . $column[$key] . '" value="' . $val . '">';
+                        }
+                        echo '</div></td>';
                     } else {
-                        echo '<td><div>' . $val . '</div></td>';
+                        if (is_array($column)) {
+                            $columnlavel2 = $column[$key];
+                            $colkey;
+                            if (is_array($columnlavel2)) {
+                                foreach ($columnlavel2 as $key2 => $val2) {
+                                    $colkey = $key2;
+                                }
+                                if ($colkey == "select") {
+                                    echo '<td><div><select onchange=onSelectChange('.$row["id"].',"'.$key.'","'.$table.'",this) name="' . $key . '" class="form-control" style="width:100px;">';
+                                    $optionarray = $columnlavel2[$colkey];
+                                    for ($coli = 0; $coli < count($optionarray); $coli++) {
+                                        echo '<option value="' . $optionarray[$coli] . '">' . $optionarray[$coli] . '</option>';
+                                    }
+                                    echo '<option selected value="' . $val . '">' . $val . '</option>';
+                                    echo '</select></td>';
+                                }
+                            } else {
+                                echo '<td><div><input style="border:none;background:transparent;" name="' . $key . '" type="' . $column[$key] . '" value="' . $val . '">    </div></td>';
+                            }
+                        } else {
+                            echo '<td><div>' . $val . '</div></td>';
+                        }
                     }
                 }
-
-                if ($externallinks != "") {
-                    $link = "<td><div><a href='$externallinks&id=" . $row['id'] . "'>Edit more</a></div></td>";
+                echo '<input name="tbname" type="hidden" value="' . $table . '">';
+                if ($externallinks == "Detail") {
+                    $link = "<td><div><a href='user_order_detail.php?id=" . $row['id'] . "'>$externallinks </a></div></td>";
+                    echo $link;
+                }
+                if ($externallinks == "Invoice") {
+                    $link = "<td><div><a href='invoice_table.php?id=" . $row['id'] . "'>$externallinks </a></div></td>";
+                    echo $link;
+                }
+                if ($externallinks == "ledgers") {
+                    $link = "<td><div><a href='ledgers_table.php?id=" . $row['id'] . "'>$externallinks </a></div></td>";
+                    echo $link;
+                }
+                if ($externallinks == "account") {
+                    $link = "<td><div><a href='account_table.php?id=" . $row['id'] . "'>$externallinks </a></div></td>";
+                    echo $link;
+                }
+                if ($externallinks == "proformaShow") {
+                    $link = "<td><div><a href='proforma_table.php?recentinsertedid=" . $row['id'] . "'>$externallinks </a></div></td>";
+                    echo $link;
+                }
+                if ($externallinks == "productQuantity") {
+                    $link = "<td><div><a href='product_quantity.php?id=" . $row['id'] . "'>$externallinks </a></div></td>";
                     echo $link;
                 }
                 ?>
+                <td></form></td>            
             </tr>
             <?php
         }
@@ -765,6 +862,7 @@ class DB implements DBDeclare {
         echo '        
             <script>
             $(document).ready(function () {
+
                 $("#myInput").on("keyup", function () {
                     var value = $(this).val().toLowerCase();
                     $("#myTable tr").filter(function () {
@@ -988,7 +1086,23 @@ class DB implements DBDeclare {
 
     function select($table, $columns = "*", $where = "", $sort = "id asc") {
         $this->returnarray = array();
+        if (is_array($columns)) {
+
+            $dummy_col = "";
+            $arraysize = count($columns);
+            $i = 0;
+            foreach ($columns as $key => $value) {
+                $i++;
+                if ($arraysize == $i) {
+                    $dummy_col .= $key . "";
+                } else {
+                    $dummy_col .= $key . ",";
+                }
+            }
+            $columns = $dummy_col;
+        }
         if ($where != "" && count($where) > 0) {
+
             $SQL = "select $columns from $table where ";
             $i = 0;
             $j = 0;
@@ -1024,7 +1138,7 @@ class DB implements DBDeclare {
             $SQL = "select $columns from $table";
         }
         $SQL .= " order by $sort";
-//        echo "$SQL";
+        //    echo "$SQL";  
         if (!empty($columns)) {
             $data = $this->conn->query($SQL);
             return $data;
@@ -1139,7 +1253,7 @@ class DB implements DBDeclare {
         return $this->returnarray;
     }
 
-    function insert($data, $table) {
+    function insert($data, $table, $recentid = "yes") {
         $this->returnarray = array();
         $i = 0;
         $id = 0;
@@ -1157,7 +1271,11 @@ class DB implements DBDeclare {
                     $SQL = "insert into $table($column) values('$value')";
                     $m = $this->conn->query($SQL);
                     $id = $this->conn->insert_id;
-                    $_SESSION["recentinsertedid"] = $id;
+                    if ($recentid == "yes") {
+                        $_SESSION["recentinsertedid"] = $id;
+                    } else {
+                        
+                    }
                     if ($m) {
                         array_push($this->returnarray, 1);
                         array_push($this->returnarray, "<br>~info: $table inserted:-($SQL)");
