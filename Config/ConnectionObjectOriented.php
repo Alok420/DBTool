@@ -1,4 +1,5 @@
 <?php
+
 interface connection_declare {
 
     public function create_database($dbname, $operation, $conn);
@@ -62,13 +63,18 @@ class connection implements connection_declare {
     }
 
 }
-if (isset($_SESSION["conn"])) {
-    $conn = $_SESSION["conn"];
-} else {
-    
-    $connection = new connection();
-    $conn = $connection->connect("localhost", "root", "");
-    $connection->attach_db($conn, "bitsinfotec");
-}
 
+//$dbname = "allinone";
+//$username = "root";
+//$password = "root";
+//for digital ocean------------
+// $dbname="allinone";
+//   $username="admin";
+//   $password="admin1234";
+$dbname = "crawdford";
+$username = "root";
+$password = "";
+$connection = new connection();
+$conn = $connection->connect("localhost", $username, $password);
+$connection->attach_db($conn, $dbname);
 ?>

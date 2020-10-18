@@ -5,6 +5,7 @@ session_start();
 include '../Config/ConnectionObjectOriented.php';
 include '../Config/DB.php';
 include '../Config/Configuration.php';
+$db = new DB($conn);
 if (isset($_POST["api_key"]) && isset($_SESSION["loginid"])) {
     $user_api_key = $_POST["api_key"];
     $loginid = $_SESSION["loginid"];
@@ -23,9 +24,15 @@ $location = "../img/user/";
 $tbname = $_POST["tbname"];
 if ($tbname == "user") {
     $location = "../img/user/";
+} else if ($tbname == "products") {
+    $location = "../img/products/";
+} else if ($tbname == "services") {
+    $location = "../img/services/";
+} else if ($tbname == "client_info") {
+    $location = "../img/clients/";
 }
 unset($_POST["tbname"]);
-$db = new DB($conn);
+
 $auto = array();
 $name = $_POST["name"];
 $key = $db->apiKey($name);

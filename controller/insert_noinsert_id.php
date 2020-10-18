@@ -25,34 +25,31 @@ if (isset($_SESSION["loginid"])) {
     $tbname = $_POST["tbname"];
     if ($tbname == "user") {
         $location = "../img/user/";
-    } else if ($tbname == "products") {
-        $location = "../img/products/";
+    } else if ($tbname == "services_category") {
+        $location = "../img/service_category/";
     } else if ($tbname == "services") {
         $location = "../img/services/";
-    }else if ($tbname == "client_info") {
-        $location = "../img/clients/";
     }
     unset($_POST["tbname"]);
     $info = $db->insert($_POST, $tbname);
 //var_dump($info);
 // if ($db->apichecker($_POST["api_key"], $_POST["user_id"], "user")) {
-    if (isset($_SESSION["recentinsertedid"])) {
-        $recentinsertedid = $_SESSION["recentinsertedid"];
-    }
+
     if ($info[0] == 1) {
         if (count($_FILES) > 0) {
             $return = $db->fileUploadWithTable($_FILES, $tbname, $recentinsertedid, $location, "50m", "JPG,PNG,JFIF,jpg,png,jfif");
             $return = array();
             $return["status"] = "success";
             $return["message"] = "Data and image saved";
-            $return["recentinsertedid"] = $_SESSION["recentinsertedid"];
+            $return["recentinsertedid"] = $_REQUEST["recentinsertedid"];
 //        var_dump($return);
             $db->sendBack($_SERVER, "?" . http_build_query($return));
         } else {
             $info = array();
             $info["status"] = "success";
             $info["message"] = "Data  saved";
-            $info["recentinsertedid"] = $_SESSION["recentinsertedid"] or 0;
+            $info["recentinsertedid"] = $_REQUEST["recentinsertedid"];
+
 //        var_dump($info);
             $db->sendBack($_SERVER, "?" . http_build_query($info));
         }

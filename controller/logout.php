@@ -6,4 +6,4 @@ include '../Config/DB.php';
 $db = new DB($conn);
 session_start();
 session_destroy();
-$db->sendTo("../index.php");
+$db->sendTo("../login.php");

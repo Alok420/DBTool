@@ -15,11 +15,8 @@ if (isset($_REQUEST["id"])) {
     unset($_REQUEST["tbname"]);
     $info = $db->update($_REQUEST, $tablename, $id);
     if ($info[0] == 1) {
-        $db->sendBack($_SERVER, $info1);
+        $db->sendBack($_SERVER, "?".$info1);
     } else {
-        echo "Not updated";
-//        echo $info[1];
-//        echo $info[2];
-//        echo $info[3];
+        var_dump($info);
     }
 }

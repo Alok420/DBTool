@@ -29,16 +29,35 @@ if (isset($_SESSION["loginid"])) {
         $location = "../img/products/";
     } else if ($tbname == "services") {
         $location = "../img/services/";
-    }else if ($tbname == "client_info") {
-        $location = "../img/clients/";
     }
     unset($_POST["tbname"]);
     $info = $db->insert($_POST, $tbname);
-//var_dump($info);
-// if ($db->apichecker($_POST["api_key"], $_POST["user_id"], "user")) {
     if (isset($_SESSION["recentinsertedid"])) {
         $recentinsertedid = $_SESSION["recentinsertedid"];
     }
+    $vno=$recentinsertedid;
+    $vtype="";
+    $credit="";
+    $debit="";
+    $particulars="";
+    if($tbname=="sales"){
+        $vtype="sales";
+        $credit=$_POST["actual_amount"];
+        $particulars="sales";
+    }elseif($tbname=="receipts"){
+        $vtype="receipts";
+        $debit=$_POST["amount_received"];
+        $particulars=$_POST["voucher_type"];
+    }
+    $ledger = array("credit"=> $credit,"debit" => $debit, "voucher_type" =>$vtype, "voch_number" => $vno,"particulars"=>$particulars);
+    if($info[0]==1){
+        $info=$db->insert($ledger,"ledgers");
+
+    }    else{
+        die("first record not created");
+    }
+// if ($db->apichecker($_POST["api_key"],. $_POST["user_id"], "user")) {
+    
     if ($info[0] == 1) {
         if (count($_FILES) > 0) {
             $return = $db->fileUploadWithTable($_FILES, $tbname, $recentinsertedid, $location, "50m", "JPG,PNG,JFIF,jpg,png,jfif");
@@ -46,14 +65,14 @@ if (isset($_SESSION["loginid"])) {
             $return["status"] = "success";
             $return["message"] = "Data and image saved";
             $return["recentinsertedid"] = $_SESSION["recentinsertedid"];
-//        var_dump($return);
+    //    var_dump($return);
             $db->sendBack($_SERVER, "?" . http_build_query($return));
         } else {
             $info = array();
             $info["status"] = "success";
             $info["message"] = "Data  saved";
             $info["recentinsertedid"] = $_SESSION["recentinsertedid"] or 0;
-//        var_dump($info);
+    //    var_dump($info);
             $db->sendBack($_SERVER, "?" . http_build_query($info));
         }
     } else if ($info[0] == 0) {
