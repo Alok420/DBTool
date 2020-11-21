@@ -1,11 +1,11 @@
 <?php
 
-include '../../../../Config/ConnectionObjectOriented.php';
-include '../../../../Config/DB.php';
+include '../../../Config/ConnectionObjectOriented.php';
+include '../../../Config/DB.php';
 $db = new DB($conn);
-if (isset($_GET["id"]) && isset($_GET["table_name"])) {
+if (isset($_GET["id"]) && isset($_GET["tbname"])) {
     $id = $_GET["id"];
-    $table = $_GET["table_name"];
+    $table = $_GET["tbname"];
     $column="*";
     if ($_GET["column"]) {
         $column = $_GET["column"];

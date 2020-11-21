@@ -1,40 +1,67 @@
-<?php
-include './session_conn_db.php';
-?>
-<!DOCTYPE html>
-<html lang="en">
+<?php include './common/session_db.php'; ?>
+<!doctype html>
+<html class="no-js" lang="en">
+
     <head>
-        <title>Bootstrap Example</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.css">
-
-        <link rel="stylesheet" type="text/css" href="style/common.css">
-        <script language="Javascript" src="../HtmlBox_4.0.3/jquery-1.3.2.min.js" type="text/javascript"></script>
-        <script language="Javascript" src="../HtmlBox_4.0.3/htmlbox.min.js" type="text/javascript"></script>
-
+        <?php include './common/head.php'; ?>
+        <?php include '../Config/common_script.php'; ?>
     </head>
+
     <body>
-        <?php include './header.php'; ?>
+        <!--[if lt IE 8]>
+                <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+            <![endif]-->
 
-        <div class="container-fluid">
-            <h3 style="text-align: center;">Users</h3>
-
-            <div class="row">
-
-                <div class="col-sm-2">
-                    <?php include './sidebar.php'; ?>
+        <div class="left-sidebar-pro">
+            <!-- nav_siderbar php -->
+            <?php include './common/nav_sidebar.php'; ?>
+            <!-- nav_siderbar End php -->
+        </div>
+        <!-- Start Welcome area -->
+        <div class="all-content-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="logo-pro">
+                            <a href="index.html"><img class="main-logo" src="img/logo/logo.png" alt="" /></a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-10">
-                    <div style="overflow-x: scroll;">
-                        <?php
-                        $db->showInTable("user");
-                        ?>
+            </div>
+            <div class="header-advance-area">
+
+                <!-- haeder_menu  start-->
+                <?php include './common/header_menu.php'; ?>
+                <!-- haeder_menu  end -->
+                <!-- Mobile Menu start -->
+                <div class="mobile-menu-area">
+                    <?php include './common/mobile_menu_area.php'; ?>
+                </div>
+                <!-- Mobile Menu end -->            
+            </div>
+            <div class="product-status mg-tb-15">
+                <div class="main-content">
+                    <div class="section__content section__content--p30">
+                        <DIV class="container-fluid">
+                            <?php
+                            $db->showInTable("user", "id,name,userid,email,contact,role,blocked", array(), "no", $externallinks = "", array(), $sort);
+                            ?>
+                        </DIV>
                     </div>
                 </div>
             </div>
         </div>
-        <?php include '../Config/common_script.php'; ?>
+        <script>
+            $(document).ready(function () {
+                $("#myInput").on("keyup", function () {
+                    var value = $(this).val().toLowerCase();
+                    $("#myTable tbody tr").filter(function () {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    });
+                });
+            });
+        </script>
+        <?php include './common/footer_script.php'; ?>
     </body>
+
 </html>
