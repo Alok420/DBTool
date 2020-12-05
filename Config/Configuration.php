@@ -20,36 +20,18 @@ class Configuration {
   function tablesdata() {
     $tables = array(
         "user" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "name" => "varchar:20:default 'NA'", "contact" => "varchar:11:unique", "userid" => "varchar:100:unique NOT NULL default 'NA'", "email" => "varchar:50:unique NOT NULL default 'NA'", "password" => "text", "api_key" => "text", "role" => "varchar:50", "blocked" => "int:1:default 0", "image" => "varchar:100", "about" => "varchar:200"),
-        "jobs" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "title" => "varchar:50", "skills" => "varchar:30", "number_of_vacancies" => "int", "salary" => "int", "job_type" => "varchar:30", "salary_unit" => "varchar:10", "package_duration" => "varchar:10", "description" => "text", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "eng_buddy_hr_approval" => "int:1:default 0", "super_admin_approval" => "int:1:default 0"),
-        "contact_us" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "name" => "varchar:50", "email" => "varchar:30", "message" => "text", "contact" => "varchar:11", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-        "article_category" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "title" => "varchar:500"),
-        "job_category" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "title" => "varchar:500"),
-        "articles" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "title" => "varchar:1000", "like" => "int", "image" => "varchar:500", "views" => "int", "description" => "text", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "share_count" => "int", "tags" => "varchar:1000", "tech_admin_approval" => "int:0", "tech_super_admin_approval" => "int:0", "tags" => "text"),
-        "client_hr_profile" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "company_name" => "varchar:100", "company_contact_number" => "varchar:12", "image" => "varchar:200", "local_address" => "varchar:500", "zip_code" => "varchar:10", "city" => "varchar:100", "country" => "varchar:50", "country_code" => "varchar:10", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "contact_person_name" => "varchar:50", "contact_person_cell" => "varchar:12", "contact_person_email" => "varchar:50", "description" => "text", "created_by_id" => "int"),
-        "user_profile" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "resume" => "varchar:100", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-        "subscription" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "emaill" => "varchar:20:unique not null", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-        "ad_places" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "name" => "varchar:20", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "cost" => "int", "cost_unit" => "varchar:20", "status" => "varchar:20", "ads_id" => "int", "gst" => "float", "remarks" => "varchar:200", "offer_percentage" => "float"),
-        "ads" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "name" => "varchar:20", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "image" => "varchar:20", "ad_text" => "varchar:100", "start_date" => "varchar:20", "end_date" => "varchar:20", "url" => "varchar:500", "status" => "varchar:20"),
-        "comments" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "content" => "text", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "user_like" => "int", "status" => "varchar:20"),
-        "reply" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "content" => "text", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "user_like" => "int", "status" => "varchar:20"),
-        "job_application" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "status" => "varchar:20:default Not checked", "eng_buddy_hr_permission" => "varchar:20:default approve"),
-        "invoice" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP", "total" => "float", "gst" => "float", "extra" => "float", "remarks" => "varchar:200", "payment_status" => "varchar:10"),
-        "likes" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-        "pages" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "page" => "varchar:50:unique not null default 'NA'", "tags" => "text", "description" => "text", "author" => "varchar:20"),
-        "searches" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "search_key" => "varchar:50", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-        "contacts" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "name" => "varchar:50", "email" => "varchar:50", "contact" => "varchar:15", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-        "unsubscription" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "feedback" => "varchar:500", "other" => "varchar:500", "email" => "varchar:50", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP")
+        "likes" => array("id" => "int:11: PRIMARY KEY AUTO_INCREMENT", "date_time" => "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP","liked_by"=>"varchar:20","personname"=>"varchar:20"),
     );
     return $tables;
   }
 
   /*
     To create the relation
-      *(parenttable:primary_key_id(optional)=>childtable:ondelete:onupdate:foreign_key_column_name(optional))
+   * (parenttable:primary_key_id(optional)=>childtable:ondelete:onupdate:foreign_key_column_name(optional))
     To drop foreign key without droping foreign key column  put drop: before child table
-      *(parenttable:primary_key_id(optional)=>drop:childtable:ondelete:onupdate:foreign_key_column_name(optional))
+   * (parenttable:primary_key_id(optional)=>drop:childtable:ondelete:onupdate:foreign_key_column_name(optional))
     To drop foreign key with droping foreign key column  put dropcol: before child table
-      *(parenttable:primary_key_id(optional)=>dropcol:childtable:ondelete:onupdate:foreign_key_column_name(optional))
+   * (parenttable:primary_key_id(optional)=>dropcol:childtable:ondelete:onupdate:foreign_key_column_name(optional))
    */
 
   function tableRelation() {
@@ -82,7 +64,7 @@ class Configuration {
   }
 
   function configure($create_relate = "creation", $operation = "change") {
-    $info2=array();
+    $info2 = array();
     $db = new DB($this->conn);
     ini_set('max_execution_time', 300);
     if ($create_relate == "creation") {

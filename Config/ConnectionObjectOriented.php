@@ -71,7 +71,7 @@ class connection implements connection_declare {
 // $dbname="allinone";
 //   $username="admin";
 //   $password="admin1234";
-$dbname = "crawdford";
+$dbname = "dbtool";
 $username = "root";
 $password = "";
 $connection = new connection();
